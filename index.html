@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Congkak Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <h1 class="title">Congkak</h1>
+    <p class="subtitle">Player A vs Player B</p>
+
+    <div class="info-bar">
+      <div class="score">
+        <span class="label">Player A Store:</span>
+        <span id="scoreA">0</span>
+      </div>
+      <div class="turn-indicator">
+        Current Turn: <span id="currentTurn">Player A</span>
+      </div>
+      <div class="score">
+        <span class="label">Player B Store:</span>
+        <span id="scoreB">0</span>
+      </div>
+    </div>
+
+    <div class="board-container">
+      <div class="board">
+        <!-- Player B store (right from Player A POV but at top left visually) -->
+        <div class="store store-b" data-index="15">
+          <div class="store-label">B Store</div>
+          <div class="seed-container"></div>
+          <div class="count"></div>
+        </div>
+
+        <div class="middle">
+          <!-- Top row: Player B holes (right to left) -->
+          <div class="row row-top">
+            <button class="hole" data-index="14"></button>
+            <button class="hole" data-index="13"></button>
+            <button class="hole" data-index="12"></button>
+            <button class="hole" data-index="11"></button>
+            <button class="hole" data-index="10"></button>
+            <button class="hole" data-index="9"></button>
+            <button class="hole" data-index="8"></button>
+          </div>
+
+          <!-- Bottom row: Player A holes (left to right) -->
+          <div class="row row-bottom">
+            <button class="hole" data-index="0"></button>
+            <button class="hole" data-index="1"></button>
+            <button class="hole" data-index="2"></button>
+            <button class="hole" data-index="3"></button>
+            <button class="hole" data-index="4"></button>
+            <button class="hole" data-index="5"></button>
+            <button class="hole" data-index="6"></button>
+          </div>
+        </div>
+
+        <!-- Player A store (bottom left visually) -->
+        <div class="store store-a" data-index="7">
+          <div class="store-label">A Store</div>
+          <div class="seed-container"></div>
+          <div class="count"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="newGameBtn">New Game</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <footer class="footer">
+      <p>Tip: Player A uses the <strong>bottom row</strong>, Player B uses the <strong>top row</strong>. Click your own holes to move.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

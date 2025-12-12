@@ -526,15 +526,24 @@ function endGame() {
   finalScoreAEl.textContent = aScore;
   finalScoreBEl.textContent = bScore;
   
+  // Reset highlights
+  finalScoreAEl.parentElement.classList.remove("winner-highlight");
+  finalScoreBEl.parentElement.classList.remove("winner-highlight");
+
+  // Determine Winner based on Store Count
   if (aScore > bScore) {
-    winnerTextEl.textContent = "Player A Wins! 🏆";
-    winnerTextEl.style.color = "#27ae60";
+    winnerTextEl.textContent = "Player A Wins!";
+    winnerTextEl.style.color = "#27ae60"; // Green
+    finalScoreAEl.parentElement.classList.add("winner-highlight");
+    createConfetti();
   } else if (bScore > aScore) {
-    winnerTextEl.textContent = "Player B Wins! 🏆";
-    winnerTextEl.style.color = "#d35400";
+    winnerTextEl.textContent = "Player B Wins!";
+    winnerTextEl.style.color = "#d35400"; // Orange
+    finalScoreBEl.parentElement.classList.add("winner-highlight");
+    createConfetti();
   } else {
-    winnerTextEl.textContent = "It's a Tie! 🤝";
-    winnerTextEl.style.color = "#7f8c8d";
+    winnerTextEl.textContent = "It's a Tie!";
+    winnerTextEl.style.color = "#7f8c8d"; // Grey
   }
 
   // Show Modal
@@ -542,6 +551,35 @@ function endGame() {
   
   setStatus("Game Over");
   updateTurnIndicators();
+}
+
+function createConfetti() {
+  const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'];
+  const confettiCount = 100;
+
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    
+    // Random Properties
+    const bg = colors[Math.floor(Math.random() * colors.length)];
+    const left = Math.random() * 100 + 'vw';
+    const animDuration = Math.random() * 3 + 2 + 's'; // 2s to 5s
+    const animDelay = Math.random() * 0.5 + 's';
+    
+    confetti.style.backgroundColor = bg;
+    confetti.style.left = left;
+    confetti.style.top = '-10px';
+    confetti.style.animationDuration = animDuration;
+    confetti.style.animationDelay = animDelay;
+    
+    document.body.appendChild(confetti);
+
+    // Remove after animation
+    setTimeout(() => {
+      confetti.remove();
+    }, 5000);
+  }
 }
 
 holeButtons.forEach((btn) => {

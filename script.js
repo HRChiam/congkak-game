@@ -1,6 +1,6 @@
 // Congkak Game Logic + Smooth Path Animation
 // Enhanced: Sequential Selection -> Simultaneous Race
-// Fix: Strict Visual Accounting (Hand count updates before animation)
+// Features: Pop-up Winner, Max 100 Store Seeds, Max 30 Hole Seeds
 
 // Board indexes:
 // 0-6   : Player A holes (bottom row)
@@ -25,8 +25,8 @@ const HOLES_PER_SIDE = 7;
 const TOTAL_SLOTS = 16;
 
 // Animation Timing
-const ANIMATION_DURATION = 400; 
-const BETWEEN_SEEDS_DELAY = 150;
+const ANIMATION_DURATION = 320; 
+const BETWEEN_SEEDS_DELAY = 100; // Slower pace
 
 let board = [];
 let currentPlayer = "A"; 
@@ -53,6 +53,14 @@ const handCountAEl = document.getElementById("handCountA");
 const handIndicatorBEl = document.getElementById("handIndicatorB");
 const handCountBEl = document.getElementById("handCountB");
 
+// Modal Elements
+const modalEl = document.getElementById("gameOverModal");
+const winnerTextEl = document.getElementById("winnerText");
+const finalScoreAEl = document.getElementById("finalScoreA");
+const finalScoreBEl = document.getElementById("finalScoreB");
+const modalRestartBtn = document.getElementById("modalRestartBtn");
+
+
 // Map index -> element
 function getSlotElement(index) {
   if (index === 7) return storeAEl;
@@ -75,6 +83,9 @@ function initBoard() {
   activeTurnCount = 0;
   gameOver = false;
   currentPlayer = "A"; 
+
+  // Hide modal if open
+  modalEl.style.display = "none";
 
   holeButtons.forEach(btn => btn.classList.remove("selected-start"));
 
@@ -137,7 +148,8 @@ function renderBoard() {
     const seedContainer = document.createElement("div");
     seedContainer.classList.add("seed-container");
 
-    const maxVisualSeeds = 15;
+    // --- FIX: INCREASED VISUAL LIMIT TO 30 ---
+    const maxVisualSeeds = 30; 
     const visualCount = Math.min(seedCount, maxVisualSeeds);
 
     for (let i = 0; i < visualCount; i++) {
@@ -170,7 +182,8 @@ function renderStore(storeElement, index) {
 
   seedContainer.innerHTML = "";
   
-  const maxVisualStore = 50; 
+  // Store Limit 100
+  const maxVisualStore = 100; 
   const visualCount = Math.min(seedCount, maxVisualStore);
 
   for (let i = 0; i < visualCount; i++) {
@@ -349,9 +362,7 @@ async function triggerSimultaneousRace() {
   activeTurnCount = 0;
   
   gamePhase = "turn";
-  // Logic to determine whose turn it is after race:
-  // If one person died and the other kept going, the one who is "alive" usually continues?
-  // Or simpler: Just swap to B to start the alternating turns.
+  // B continues by default to balance advantage
   currentPlayer = "B"; 
   setStatus(`Race finished. Entering Turn Mode. Player ${currentPlayer}'s turn.`);
   
@@ -368,7 +379,7 @@ async function runTurnLogic(startIndex, player) {
   // Pick up initial seeds
   board[currentIndex] = 0;
   updateHandDisplay(player, hand, true);
-  renderBoard(); // Immediately show empty hole
+  renderBoard(); 
 
   let keepGoing = true;
 
@@ -412,7 +423,6 @@ async function runTurnLogic(startIndex, player) {
       }
     }
 
-    // If landed in what *was* an empty hole (now has 1 seed from us)
     if (board[currentIndex] === 1) { 
       if (isOnSide(currentIndex, player)) {
          await applyCapture(currentIndex, player);
@@ -511,11 +521,26 @@ function endGame() {
   sndEnd.play().catch(()=>{});
   const aScore = board[7];
   const bScore = board[15];
-  let msg = `Game Over! A: ${aScore} - B: ${bScore}. `;
-  if (aScore > bScore) msg += "Player A Wins!";
-  else if (bScore > aScore) msg += "Player B Wins!";
-  else msg += "It's a Tie!";
-  setStatus(msg);
+
+  // Set Modal Info
+  finalScoreAEl.textContent = aScore;
+  finalScoreBEl.textContent = bScore;
+  
+  if (aScore > bScore) {
+    winnerTextEl.textContent = "Player A Wins! 🏆";
+    winnerTextEl.style.color = "#27ae60";
+  } else if (bScore > aScore) {
+    winnerTextEl.textContent = "Player B Wins! 🏆";
+    winnerTextEl.style.color = "#d35400";
+  } else {
+    winnerTextEl.textContent = "It's a Tie! 🤝";
+    winnerTextEl.style.color = "#7f8c8d";
+  }
+
+  // Show Modal
+  modalEl.style.display = "flex";
+  
+  setStatus("Game Over");
   updateTurnIndicators();
 }
 
@@ -529,4 +554,6 @@ holeButtons.forEach((btn) => {
 });
 
 newGameBtn.addEventListener("click", initBoard);
+modalRestartBtn.addEventListener("click", initBoard); // Wire up modal button
+
 initBoard();

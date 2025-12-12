@@ -349,26 +349,29 @@ async function handleHoleClick(index) {
 
 async function triggerSimultaneousRace() {
   gamePhase = "race";
+  raceWinner = null; 
   updateTurnIndicators();
 
   holeButtons.forEach(btn => btn.classList.remove("selected-start"));
-  activeTurnCount = 2; 
-
+  
   const p1 = runTurnLogic(startChoiceA, "A").then(() => updateHandDisplay("A", 0, false));
   const p2 = runTurnLogic(startChoiceB, "B").then(() => updateHandDisplay("B", 0, false));
 
   await Promise.all([p1, p2]);
 
   activeTurnCount = 0;
-  
   gamePhase = "turn";
-  // B continues by default to balance advantage
-  currentPlayer = "B"; 
-  setStatus(`Race finished. Entering Turn Mode. Player ${currentPlayer}'s turn.`);
+  
+  if (raceWinner) {
+    currentPlayer = raceWinner;
+    setStatus(`Race finished. Player ${currentPlayer} stopped first, so they go next.`);
+  } else {
+    currentPlayer = Math.random() < 0.5 ? "A" : "B";
+    setStatus(`It was a tie! Coin flip won by: Player ${currentPlayer}.`);
+  }
   
   checkGameState();
 }
-
 
 // --- Logic ---
 
@@ -430,6 +433,10 @@ async function runTurnLogic(startIndex, player) {
          setStatus(`Player ${player} stopped (Mati).`);
       }
       keepGoing = false;
+
+      if (gamePhase === "race" && raceWinner === null) {
+           raceWinner = player;
+       }
     } 
     else {
       // Pick up seeds
@@ -526,24 +533,25 @@ function endGame() {
   finalScoreAEl.textContent = aScore;
   finalScoreBEl.textContent = bScore;
   
-  // Reset highlights
+  // Clean up previous classes (reset)
+  winnerTextEl.className = ""; 
   finalScoreAEl.parentElement.classList.remove("winner-highlight");
   finalScoreBEl.parentElement.classList.remove("winner-highlight");
 
-  // Determine Winner based on Store Count
+  // Determine Winner
   if (aScore > bScore) {
     winnerTextEl.textContent = "Player A Wins!";
-    winnerTextEl.style.color = "#27ae60"; // Green
+    winnerTextEl.classList.add("win-text-a"); // <--- Apply Class
     finalScoreAEl.parentElement.classList.add("winner-highlight");
     createConfetti();
   } else if (bScore > aScore) {
     winnerTextEl.textContent = "Player B Wins!";
-    winnerTextEl.style.color = "#d35400"; // Orange
+    winnerTextEl.classList.add("win-text-b"); // <--- Apply Class
     finalScoreBEl.parentElement.classList.add("winner-highlight");
     createConfetti();
   } else {
     winnerTextEl.textContent = "It's a Tie!";
-    winnerTextEl.style.color = "#7f8c8d"; // Grey
+    winnerTextEl.classList.add("win-text-tie"); // <--- Apply Class
   }
 
   // Show Modal

@@ -21,15 +21,16 @@ const HOLES_PER_SIDE = 7;
 const TOTAL_SLOTS = 16;
 
 // Animation Timing
-const ANIMATION_DURATION = 320; 
+const ANIMATION_DURATION = 320;
 const BETWEEN_SEEDS_DELAY = 100; // Slower pace
 
 let board = [];
-let currentPlayer = "A"; 
+let currentPlayer = "A";
 let gamePhase = "setup"; // "setup", "race", "turn"
-let activeTurnCount = 0; 
+let activeTurnCount = 0;
 let gameOver = false;
 let matchId = 0;
+let raceResult = null;
 
 // Setup selections
 let startChoiceA = null;
@@ -70,18 +71,18 @@ function initBoard() {
   document.querySelectorAll('.floating-seed').forEach(el => el.remove());
   board = Array(TOTAL_SLOTS).fill(0);
   for (let i = 0; i < HOLES_PER_SIDE; i++) {
-    board[i] = INITIAL_SEEDS; 
-    board[8 + i] = INITIAL_SEEDS; 
+    board[i] = INITIAL_SEEDS;
+    board[8 + i] = INITIAL_SEEDS;
   }
-  board[7] = 0; 
-  board[15] = 0; 
+  board[7] = 0;
+  board[15] = 0;
 
   gamePhase = "setup";
   startChoiceA = null;
   startChoiceB = null;
   activeTurnCount = 0;
   gameOver = false;
-  currentPlayer = "A"; 
+  currentPlayer = "A";
 
   // Hide modal if open
   modalEl.style.display = "none";
@@ -143,12 +144,12 @@ function renderBoard() {
     const seedCount = board[index];
 
     btn.innerHTML = "";
-    
+
     const seedContainer = document.createElement("div");
     seedContainer.classList.add("seed-container");
 
     // --- FIX: INCREASED VISUAL LIMIT TO 30 ---
-    const maxVisualSeeds = 30; 
+    const maxVisualSeeds = 30;
     const visualCount = Math.min(seedCount, maxVisualSeeds);
 
     for (let i = 0; i < visualCount; i++) {
@@ -180,9 +181,9 @@ function renderStore(storeElement, index) {
   const seedCount = board[index];
 
   seedContainer.innerHTML = "";
-  
+
   // Store Limit 100
-  const maxVisualStore = 100; 
+  const maxVisualStore = 100;
   const visualCount = Math.min(seedCount, maxVisualStore);
 
   for (let i = 0; i < visualCount; i++) {
@@ -209,11 +210,11 @@ function updateTurnIndicators() {
       document.body.classList.add("player-a-turn");
       document.body.classList.remove("player-b-turn");
     } else if (startChoiceB === null) {
-        document.body.classList.remove("player-a-turn");
-        document.body.classList.add("player-b-turn");
+      document.body.classList.remove("player-a-turn");
+      document.body.classList.add("player-b-turn");
     } else {
-        document.body.classList.add("player-a-turn");
-        document.body.classList.add("player-b-turn");
+      document.body.classList.add("player-a-turn");
+      document.body.classList.add("player-b-turn");
     }
   } else {
     currentTurnEl.textContent = currentPlayer === "A" ? "Player A" : "Player B";
@@ -277,30 +278,30 @@ function animateSeedMove(fromIndex, toIndex) {
     floating.style.opacity = "1";
 
     document.body.appendChild(floating);
-    floating.offsetWidth; 
+    floating.offsetWidth;
 
     floating.style.left = `${endX}px`;
     floating.style.top = `${endY}px`;
     floating.style.transform = "scale(1)";
-    
+
     floating.addEventListener("transitionend", () => {
-        document.body.removeChild(floating);
-        
-        const targetEl = getSlotElement(toIndex);
-        if(isStore(toIndex)) {
-            sndStore.currentTime = 0;
-            sndStore.play().catch(()=>{});
-            targetEl.classList.add("store-pulse");
-            setTimeout(() => targetEl.classList.remove("store-pulse"), 400);
-        } else {
-            sndDrop.currentTime = 0;
-            sndDrop.play().catch(()=>{});
-            targetEl.classList.add("slot-glow");
-            setTimeout(() => targetEl.classList.remove("slot-glow"), 400);
-        }
-        
-        resolve();
-      }, { once: true }
+      document.body.removeChild(floating);
+
+      const targetEl = getSlotElement(toIndex);
+      if (isStore(toIndex)) {
+        sndStore.currentTime = 0;
+        sndStore.play().catch(() => { });
+        targetEl.classList.add("store-pulse");
+        setTimeout(() => targetEl.classList.remove("store-pulse"), 400);
+      } else {
+        sndDrop.currentTime = 0;
+        sndDrop.play().catch(() => { });
+        targetEl.classList.add("slot-glow");
+        setTimeout(() => targetEl.classList.remove("slot-glow"), 400);
+      }
+
+      resolve();
+    }, { once: true }
     );
   });
 }
@@ -340,7 +341,7 @@ async function handleHoleClick(index) {
     updateTurnIndicators();
     await runTurnLogic(index, owner);
     activeTurnCount--;
-    
+
     updateHandDisplay(owner, 0, false);
     checkGameState();
   }
@@ -350,11 +351,16 @@ async function triggerSimultaneousRace() {
   const currentMatchId = matchId;
 
   gamePhase = "race";
-  raceWinner = null; 
+  raceResult = {
+    storeGainA: 0,
+    storeGainB: 0,
+    lastStopA: null,
+    lastStopB: null
+  };
   updateTurnIndicators();
 
   holeButtons.forEach(btn => btn.classList.remove("selected-start"));
-  
+
   const p1 = runTurnLogic(startChoiceA, "A").then(() => updateHandDisplay("A", 0, false));
   const p2 = runTurnLogic(startChoiceB, "B").then(() => updateHandDisplay("B", 0, false));
 
@@ -364,16 +370,35 @@ async function triggerSimultaneousRace() {
 
   activeTurnCount = 0;
   gamePhase = "turn";
-  
-  if (raceWinner) {
-    currentPlayer = raceWinner;
-    setStatus(`Race finished. Player ${currentPlayer} stopped first, so they go next.`);
-  } else {
-    currentPlayer = Math.random() < 0.5 ? "A" : "B";
-    setStatus(`It was a tie! Coin flip won by: Player ${currentPlayer}.`);
+
+  if (raceResult.storeGainA > raceResult.storeGainB) {
+    currentPlayer = "A";
+    setStatus("Race result: Player A gained more seeds and goes first.");
   }
-  
-  checkGameState();
+  else if (raceResult.storeGainB > raceResult.storeGainA) {
+    currentPlayer = "B";
+    setStatus("Race result: Player B gained more seeds and goes first.");
+  }
+  else {
+    // 2️⃣ Compare last stop side
+    const aOnOwnSide = raceResult.lastStopA >= 0 && raceResult.lastStopA <= 6;
+    const bOnOwnSide = raceResult.lastStopB >= 8 && raceResult.lastStopB <= 14;
+
+    if (aOnOwnSide && !bOnOwnSide) {
+      currentPlayer = "A";
+      setStatus("Race tie-breaker: Player A stopped on own side.");
+    }
+    else if (bOnOwnSide && !aOnOwnSide) {
+      currentPlayer = "B";
+      setStatus("Race tie-breaker: Player B stopped on own side.");
+    }
+    else {
+      // 3️⃣ Traditional rule
+      currentPlayer = "A";
+      setStatus("Race tie: Traditional rule — Player A goes first.");
+    }
+  }
+  updateTurnIndicators();
 }
 
 // --- Logic ---
@@ -382,11 +407,11 @@ async function runTurnLogic(startIndex, player) {
   const currentMatchId = matchId;
   let currentIndex = startIndex;
   let hand = board[currentIndex];
-  
+
   // Pick up initial seeds
   board[currentIndex] = 0;
   updateHandDisplay(player, hand, true);
-  renderBoard(); 
+  renderBoard();
 
   let keepGoing = true;
 
@@ -400,66 +425,70 @@ async function runTurnLogic(startIndex, player) {
 
       // Skip opponent's store
       if (player === "A" && nextIndex === 15) {
-        nextIndex = 0; 
+        nextIndex = 0;
       } else if (player === "B" && nextIndex === 7) {
-        nextIndex = 8; 
+        nextIndex = 8;
       }
 
-      // --- CHANGE START: We removed the decrement here ---
-      
       // 2. Animate (Visual)
       await animateSeedMove(currentIndex, nextIndex);
 
       // Check cancellation (Stop if user clicked New Game during flight)
       if (matchId !== currentMatchId) return;
-      
+
       // --- CHANGE END: We moved the decrement here (After Landing) ---
-      hand--; 
+      hand--;
       updateHandDisplay(player, hand, true);
 
       // 3. Land (Data)
       board[nextIndex]++;
       currentIndex = nextIndex;
       renderBoard();
-      
+
       await sleep(BETWEEN_SEEDS_DELAY);
     }
 
     // 2. Check Landing Condition
     if (isStore(currentIndex)) {
       if (gamePhase === "race") {
+        if (player === "A" && currentIndex === 7) {
+          raceResult.storeGainA++;
+        }
+        if (player === "B" && currentIndex === 15) {
+          raceResult.storeGainB++;
+        }
         setStatus(`Player ${player} landed in Store (Race).`);
-        keepGoing = false; 
-        return; 
-      } else {
-        setStatus(`Landed in Store! Player ${player} gets another turn.`);
         keepGoing = false;
-        return; 
+        return;
       }
+
+      setStatus(`Landed in Store! Player ${player} gets another turn.`);
+      keepGoing = false;
+      return;
     }
 
-    if (board[currentIndex] === 1) { 
+    if (board[currentIndex] === 1) {
       if (isOnSide(currentIndex, player)) {
-         await applyCapture(currentIndex, player);
+        await applyCapture(currentIndex, player);
       } else {
-         setStatus(`Player ${player} stopped (Mati).`);
+        setStatus(`Player ${player} stopped (Mati).`);
+      }
+      if (gamePhase === "race") {
+        if (player === "A") raceResult.lastStopA = currentIndex;
+        if (player === "B") raceResult.lastStopB = currentIndex;
       }
       keepGoing = false;
-
-      if (gamePhase === "race" && raceWinner === null) {
-           raceWinner = player;
-       }
-    } 
+    }
     else {
       // Pick up seeds
       setStatus(`Player ${player} continues...`);
-      await sleep(200); 
+      await sleep(200);
 
       if (matchId !== currentMatchId) return;
-      
+
       hand = board[currentIndex];
       board[currentIndex] = 0;
-      
+
       updateHandDisplay(player, hand, true);
       renderBoard();
     }
@@ -472,28 +501,28 @@ async function applyCapture(landingIndex, player) {
 
   if (capturedSeeds > 0) {
     const storeIndex = player === "A" ? 7 : 15;
-    
+
     const landingEl = getSlotElement(landingIndex);
     const oppositeEl = getSlotElement(oppositeIndex);
     landingEl.style.background = "#ff6b6b";
     oppositeEl.style.background = "#ff6b6b";
 
     setStatus(`CAPTURE! Player ${player} takes ${capturedSeeds} seeds!`);
-    sndCapture.play().catch(()=>{});
+    sndCapture.play().catch(() => { });
 
     await sleep(600);
 
     board[oppositeIndex] = 0;
-    board[landingIndex] = 0; 
+    board[landingIndex] = 0;
     board[storeIndex] += (capturedSeeds + 1);
-    
+
     landingEl.style.background = "";
     oppositeEl.style.background = "";
-    
+
     renderBoard();
     const storeEl = getSlotElement(storeIndex);
     storeEl.classList.add("store-pulse");
-    setTimeout(()=>storeEl.classList.remove("store-pulse"), 500);
+    setTimeout(() => storeEl.classList.remove("store-pulse"), 500);
   } else {
     setStatus(`Player ${player} landed in empty hole. No seeds to capture.`);
   }
@@ -501,7 +530,7 @@ async function applyCapture(landingIndex, player) {
 
 function checkGameState() {
   renderBoard();
-  
+
   if (sideEmpty("A") && sideEmpty("B")) {
     endGame();
     return;
@@ -509,20 +538,24 @@ function checkGameState() {
 
   // Only check turn switching in normal turn mode
   if (gamePhase === "turn" && activeTurnCount === 0) {
-      const statusText = statusEl.textContent;
-      if (!statusText.includes("Another turn") && !statusText.includes("Entering Turn Mode")) {
-        currentPlayer = currentPlayer === "A" ? "B" : "A";
-        setStatus(`Now Player ${currentPlayer}'s turn.`);
-      }
-      
+    if (statusEl.textContent.startsWith("Race")) {
+      updateTurnIndicators();
+      return;
+    }
+    const statusText = statusEl.textContent;
+    if (!statusText.includes("Another turn") && !statusText.includes("Entering Turn Mode")) {
+      currentPlayer = currentPlayer === "A" ? "B" : "A";
+      setStatus(`Now Player ${currentPlayer}'s turn.`);
+    }
+
+    if (sideEmpty(currentPlayer)) {
+      setStatus(`Player ${currentPlayer} has no seeds! Skipping turn.`);
+      currentPlayer = currentPlayer === "A" ? "B" : "A";
       if (sideEmpty(currentPlayer)) {
-        setStatus(`Player ${currentPlayer} has no seeds! Skipping turn.`);
-        currentPlayer = currentPlayer === "A" ? "B" : "A";
-        if (sideEmpty(currentPlayer)) {
-            collectRemainingSeeds();
-            endGame();
-        }
+        collectRemainingSeeds();
+        endGame();
       }
+    }
   }
   updateTurnIndicators();
 }
@@ -539,16 +572,16 @@ function collectRemainingSeeds() {
 
 function endGame() {
   gameOver = true;
-  sndEnd.play().catch(()=>{});
+  sndEnd.play().catch(() => { });
   const aScore = board[7];
   const bScore = board[15];
 
   // Set Modal Info
   finalScoreAEl.textContent = aScore;
   finalScoreBEl.textContent = bScore;
-  
+
   // Clean up previous classes (reset)
-  winnerTextEl.className = ""; 
+  winnerTextEl.className = "";
   finalScoreAEl.parentElement.classList.remove("winner-highlight");
   finalScoreBEl.parentElement.classList.remove("winner-highlight");
 
@@ -560,17 +593,17 @@ function endGame() {
     createConfetti();
   } else if (bScore > aScore) {
     winnerTextEl.textContent = "Player B Wins!";
-    winnerTextEl.className = "win-text-b"; 
+    winnerTextEl.className = "win-text-b";
     finalScoreBEl.parentElement.classList.add("winner-highlight");
     createConfetti();
   } else {
     winnerTextEl.textContent = "It's a Tie!";
-    winnerTextEl.className = "win-text-tie"; 
+    winnerTextEl.className = "win-text-tie";
   }
 
   // Show Modal
   modalEl.style.display = "flex";
-  
+
   setStatus("Game Over");
   updateTurnIndicators();
 }
@@ -582,19 +615,19 @@ function createConfetti() {
   for (let i = 0; i < confettiCount; i++) {
     const confetti = document.createElement('div');
     confetti.classList.add('confetti');
-    
+
     // Random Properties
     const bg = colors[Math.floor(Math.random() * colors.length)];
     const left = Math.random() * 100 + 'vw';
     const animDuration = Math.random() * 3 + 2 + 's'; // 2s to 5s
     const animDelay = Math.random() * 0.5 + 's';
-    
+
     confetti.style.backgroundColor = bg;
     confetti.style.left = left;
     confetti.style.top = '-10px';
     confetti.style.animationDuration = animDuration;
     confetti.style.animationDelay = animDelay;
-    
+
     document.body.appendChild(confetti);
 
     // Remove after animation

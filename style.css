@@ -27,28 +27,16 @@ body {
 }
 
 /* --- TITLE DESIGN (GOLD STYLE) --- */
-/* .main-title {
-  font-size: 4.5rem;
-  background: linear-gradient(to bottom, #ffd700, #f39c12);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-transform: uppercase;
-  margin-bottom: 25px;
-  letter-spacing: 3px;
-  filter: drop-shadow(0 4px 0px #4e342e);
-  -webkit-text-stroke: 1px #8d6e63;
-  animation: floatTitle 4s ease-in-out infinite;
-} */
-
 .main-title {
-  font-size: 3rem;
+  font-size: 4.5rem;
+  font-family: 'Kalam', cursive;
+  font-weight: 700;
   color: #4b2a10;
   background: none;
   -webkit-text-stroke: 0;
   text-shadow: 2px 2px 0 #d7b892;
   text-transform: uppercase;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
   letter-spacing: 2px;
   animation: floatTitle 4s ease-in-out infinite;
 }
@@ -120,7 +108,7 @@ body.player-b-turn .player-card.player-b {
 }
 
 .player-name {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #5d4037;
   /* Dark Wood Color */
   text-transform: uppercase;
@@ -133,7 +121,7 @@ body.player-b-turn .player-card.player-b {
   background: #4e342e;
   padding: 5px 15px;
   border-radius: 8px;
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: #ffecb3;
   /* Light cream text */
   min-width: 90px;
@@ -181,7 +169,7 @@ body.player-b-turn .player-card.player-b {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   border: 2px solid #fff8e1;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -216,7 +204,7 @@ body.player-b-turn .player-card.player-b {
   color: #fff;
   border: 2px solid #1b5e20;
 
-  font-size: 1.2rem;
+  font-size: 1rem;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow:
@@ -233,7 +221,7 @@ body.player-b-turn .player-card.player-b {
 
 #status {
   margin-top: 20px;
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: #000000;
   /* Light wood color text */
   text-shadow: 0 2px 4px rgba(222, 222, 222, 0.6);
@@ -241,7 +229,7 @@ body.player-b-turn .player-card.player-b {
 }
 
 .footer {
-  margin-top: 30px;
+  margin-top: 10px;
   font-family: 'Cinzel', serif;
   color: #4b4642;
   font-size: 0.9rem;
@@ -559,7 +547,7 @@ body.player-b-turn .row-top .hole {
 /* 1. THE MAIN TITLE (PLAYER A WINS!) */
 .modal-content h2 {
   font-family: 'Cinzel', serif;
-  font-size: 3.2rem;
+  font-size: 3rem;
   line-height: 1.1;
   text-transform: uppercase;
   margin-top: 0;

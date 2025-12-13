@@ -2,8 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  user-select: none;
 }
 
 body {
@@ -11,80 +10,214 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #f5ede0 0, #d6c3a8 45%, #a3845a 100%);
-  color: #2c1a10;
+  /* Deep, rich wooden table background */
+  background: radial-gradient(circle at top, #fff3e0 0, #fcebc5 45%, #e6ce9f 100%);
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  color: #fff8e1; /* Off-white text */
 }
 
 .page {
   max-width: 950px;
   width: 100%;
-  padding: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.title {
-  text-align: center;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
-  font-size: 2rem;
+/* --- TITLE DESIGN (GOLD STYLE) --- */
+.main-title {
+  font-size: 4.5rem;
+  /* Gold Gradient Text */
+  background: linear-gradient(to bottom, #ffd700, #f39c12);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  
+  text-transform: uppercase;
+  margin-bottom: 25px;
+  letter-spacing: 3px;
+  
+  /* Dark Outline */
+  filter: drop-shadow(0 4px 0px #4e342e);
+  -webkit-text-stroke: 1px #8d6e63; /* Subtle stroke for sharpness */
+  
+  animation: floatTitle 4s ease-in-out infinite;
 }
 
-.subtitle {
-  text-align: center;
-  margin-bottom: 16px;
-  opacity: 0.8;
+@keyframes floatTitle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-.info-bar {
+/* --- SCOREBOARD SECTION (PARCHMENT STYLE) --- */
+.scoreboard {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  gap: 8px;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 850px;
+  margin-bottom: 30px;
+  position: relative;
+  gap: 20px;
 }
 
-.player-group {
+/* Player Cards (Light Wood / Parchment look) */
+.player-card {
+  background: linear-gradient(to bottom, #fff3e0, #ffe0b2);
+  padding: 15px 25px;
+  border-radius: 15px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  position: relative;
+  min-width: 180px;
+  
+  /* Wood Border Effect */
+  border: 4px solid #6d4c41; 
+  box-shadow: 
+    inset 0 0 10px rgba(93, 64, 55, 0.3), /* Inner shadow for depth */
+    0 8px 15px rgba(0,0,0,0.4); /* Drop shadow on table */
+    
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.score {
+/* Active Turn Highlights (Glow) */
+body.player-a-turn .player-card.player-a {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #ffd700; /* Gold Border */
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+body.player-b-turn .player-card.player-b {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #ffd700; /* Gold Border */
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.player-info {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  font-size: 1.05rem;
+  width: 100%;
 }
 
-.turn-indicator {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  font-size: 0.95rem;
-  font-weight: 500;
-  white-space: nowrap;
+.player-name {
+  font-size: 1.2rem;
+  color: #5d4037; /* Dark Wood Color */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
 }
 
-/* Hand Indicators */
-.hand-indicator {
-  background: #ff4757;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  white-space: nowrap;
-  min-width: 80px;
+/* Score Pill (Darker inset) */
+.score-pill {
+  background: #4e342e;
+  padding: 5px 15px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  color: #ffecb3; /* Light cream text */
+  min-width: 90px;
   text-align: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); /* Inset look */
 }
 
-/* Specific positioning visual tweaks if needed */
-#handIndicatorB { transform-origin: left center; }
-#handIndicatorA { transform-origin: right center; }
+/* Center Turn Indicator (Wooden Plaque) */
+.turn-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -10px;
+}
+
+.vs-label {
+  font-size: 1.2rem;
+  color: #a1887f;
+  font-weight: 900;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.turn-pill {
+  background: linear-gradient(135deg, #795548, #4e342e);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  border: 2px solid #8d6e63;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  text-transform: uppercase;
+}
+
+/* Hand Bubbles (Floating Seeds) */
+.hand-bubble {
+  background: radial-gradient(circle at 30% 30%, #ffd54f, #ff6f00); /* Amber/Gold bead */
+  color: #3e2723;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: 2px solid #fff8e1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  
+  position: absolute;
+  top: -20px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+  z-index: 10;
+}
+
+.player-b .hand-bubble { right: -15px; }
+.player-a .hand-bubble { left: -15px; }
+
+/* --- CONTROLS & FOOTER --- */
+.controls {
+  margin-top: 25px;
+}
+
+#newGameBtn {
+  font-family: 'Fredoka One', cursive;
+  padding: 14px 40px;
+  border-radius: 12px; /* Less round, more like a button block */
+  border: none;
+  
+  /* Green Cloth / Felt Style Button */
+  background: linear-gradient(to bottom, #66bb6a, #2e7d32);
+  color: #fff;
+  border: 2px solid #1b5e20;
+  
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 
+    0 5px 0 #1b5e20, /* Dark green depth */
+    0 10px 15px rgba(0,0,0,0.3);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+#newGameBtn:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 #1b5e20;
+}
+
+#status {
+  margin-top: 20px;
+  font-size: 1.3rem;
+  color: #000000; /* Light wood color text */
+  text-shadow: 0 2px 4px rgba(222, 222, 222, 0.6);
+  min-height: 30px;
+}
+
+.footer {
+  margin-top: 30px;
+  font-family: sans-serif;
+  color: #4b4642;
+  font-size: 0.9rem;
+}
 
 .board-container {
   display: flex;

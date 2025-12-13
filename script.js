@@ -396,6 +396,7 @@ async function runTurnLogic(startIndex, player) {
 
   while (keepGoing) {
     if (matchId !== currentMatchId) return;
+
     // 1. Distribute seeds
     while (hand > 0) {
       if (matchId !== currentMatchId) return;
@@ -408,15 +409,18 @@ async function runTurnLogic(startIndex, player) {
         nextIndex = 8; 
       }
 
-      // 1. Decrement Hand (Visual)
-      hand--;
-      updateHandDisplay(player, hand, true);
-
+      // --- CHANGE START: We removed the decrement here ---
+      
       // 2. Animate (Visual)
       await animateSeedMove(currentIndex, nextIndex);
 
+      // Check cancellation (Stop if user clicked New Game during flight)
       if (matchId !== currentMatchId) return;
       
+      // --- CHANGE END: We moved the decrement here (After Landing) ---
+      hand--; 
+      updateHandDisplay(player, hand, true);
+
       // 3. Land (Data)
       board[nextIndex]++;
       currentIndex = nextIndex;

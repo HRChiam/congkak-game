@@ -33,6 +33,7 @@ let currentPlayer = "A";
 let gamePhase = "setup"; // "setup", "race", "turn"
 let activeTurnCount = 0; 
 let gameOver = false;
+let matchId = 0;
 
 // Setup selections
 let startChoiceA = null;
@@ -69,6 +70,8 @@ function getSlotElement(index) {
 }
 
 function initBoard() {
+  matchId++;
+  document.querySelectorAll('.floating-seed').forEach(el => el.remove());
   board = Array(TOTAL_SLOTS).fill(0);
   for (let i = 0; i < HOLES_PER_SIDE; i++) {
     board[i] = INITIAL_SEEDS; 
@@ -348,6 +351,8 @@ async function handleHoleClick(index) {
 }
 
 async function triggerSimultaneousRace() {
+  const currentMatchId = matchId;
+
   gamePhase = "race";
   raceWinner = null; 
   updateTurnIndicators();
@@ -358,6 +363,8 @@ async function triggerSimultaneousRace() {
   const p2 = runTurnLogic(startChoiceB, "B").then(() => updateHandDisplay("B", 0, false));
 
   await Promise.all([p1, p2]);
+
+  if (matchId !== currentMatchId) return;
 
   activeTurnCount = 0;
   gamePhase = "turn";
@@ -376,6 +383,7 @@ async function triggerSimultaneousRace() {
 // --- Logic ---
 
 async function runTurnLogic(startIndex, player) {
+  const currentMatchId = matchId;
   let currentIndex = startIndex;
   let hand = board[currentIndex];
   
@@ -387,8 +395,10 @@ async function runTurnLogic(startIndex, player) {
   let keepGoing = true;
 
   while (keepGoing) {
+    if (matchId !== currentMatchId) return;
     // 1. Distribute seeds
     while (hand > 0) {
+      if (matchId !== currentMatchId) return;
       let nextIndex = (currentIndex + 1) % TOTAL_SLOTS;
 
       // Skip opponent's store
@@ -404,6 +414,8 @@ async function runTurnLogic(startIndex, player) {
 
       // 2. Animate (Visual)
       await animateSeedMove(currentIndex, nextIndex);
+
+      if (matchId !== currentMatchId) return;
       
       // 3. Land (Data)
       board[nextIndex]++;
@@ -442,6 +454,8 @@ async function runTurnLogic(startIndex, player) {
       // Pick up seeds
       setStatus(`Player ${player} continues...`);
       await sleep(200); 
+
+      if (matchId !== currentMatchId) return;
       
       hand = board[currentIndex];
       board[currentIndex] = 0;
@@ -541,17 +555,17 @@ function endGame() {
   // Determine Winner
   if (aScore > bScore) {
     winnerTextEl.textContent = "Player A Wins!";
-    winnerTextEl.classList.add("win-text-a"); // <--- Apply Class
+    winnerTextEl.className = "win-text-a"; // Make sure this is className = ...
     finalScoreAEl.parentElement.classList.add("winner-highlight");
     createConfetti();
   } else if (bScore > aScore) {
     winnerTextEl.textContent = "Player B Wins!";
-    winnerTextEl.classList.add("win-text-b"); // <--- Apply Class
+    winnerTextEl.className = "win-text-b"; 
     finalScoreBEl.parentElement.classList.add("winner-highlight");
     createConfetti();
   } else {
     winnerTextEl.textContent = "It's a Tie!";
-    winnerTextEl.classList.add("win-text-tie"); // <--- Apply Class
+    winnerTextEl.className = "win-text-tie"; 
   }
 
   // Show Modal

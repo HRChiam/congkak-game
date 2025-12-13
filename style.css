@@ -12,8 +12,9 @@ body {
   align-items: center;
   /* Deep, rich wooden table background */
   background: radial-gradient(circle at top, #fff3e0 0, #fcebc5 45%, #e6ce9f 100%);
-  font-family: 'Fredoka One', system-ui, sans-serif;
-  color: #fff8e1; /* Off-white text */
+  font-family: 'Cinzel', serif;
+  color: #fff8e1;
+  /* Off-white text */
 }
 
 .page {
@@ -26,28 +27,42 @@ body {
 }
 
 /* --- TITLE DESIGN (GOLD STYLE) --- */
-.main-title {
+/* .main-title {
   font-size: 4.5rem;
-  /* Gold Gradient Text */
   background: linear-gradient(to bottom, #ffd700, #f39c12);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  
   text-transform: uppercase;
   margin-bottom: 25px;
   letter-spacing: 3px;
-  
-  /* Dark Outline */
   filter: drop-shadow(0 4px 0px #4e342e);
-  -webkit-text-stroke: 1px #8d6e63; /* Subtle stroke for sharpness */
-  
+  -webkit-text-stroke: 1px #8d6e63;
+  animation: floatTitle 4s ease-in-out infinite;
+} */
+
+.main-title {
+  font-size: 3rem;
+  color: #4b2a10;
+  background: none;
+  -webkit-text-stroke: 0;
+  text-shadow: 2px 2px 0 #d7b892;
+  text-transform: uppercase;
+  margin-bottom: 25px;
+  letter-spacing: 2px;
   animation: floatTitle 4s ease-in-out infinite;
 }
 
 @keyframes floatTitle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* --- SCOREBOARD SECTION (PARCHMENT STYLE) --- */
@@ -72,26 +87,28 @@ body {
   gap: 15px;
   position: relative;
   min-width: 180px;
-  
+
   /* Wood Border Effect */
-  border: 4px solid #6d4c41; 
-  box-shadow: 
-    inset 0 0 10px rgba(93, 64, 55, 0.3), /* Inner shadow for depth */
-    0 8px 15px rgba(0,0,0,0.4); /* Drop shadow on table */
-    
+  border: 4px solid #6d4c41;
+  box-shadow:
+    inset 0 0 10px rgba(93, 64, 55, 0.3),
+    /* Inner shadow for depth */
+    0 8px 15px rgba(0, 0, 0, 0.4);
+  /* Drop shadow on table */
+
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Active Turn Highlights (Glow) */
 body.player-a-turn .player-card.player-a {
   transform: translateY(-4px) scale(1.02);
-  border-color: #ffd700; /* Gold Border */
+  border-color: #ffd700;
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
 body.player-b-turn .player-card.player-b {
   transform: translateY(-4px) scale(1.02);
-  border-color: #ffd700; /* Gold Border */
+  border-color: #ffd700;
+  /* Gold Border */
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
@@ -104,7 +121,8 @@ body.player-b-turn .player-card.player-b {
 
 .player-name {
   font-size: 1.2rem;
-  color: #5d4037; /* Dark Wood Color */
+  color: #5d4037;
+  /* Dark Wood Color */
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 5px;
@@ -116,10 +134,12 @@ body.player-b-turn .player-card.player-b {
   padding: 5px 15px;
   border-radius: 8px;
   font-size: 1.5rem;
-  color: #ffecb3; /* Light cream text */
+  color: #ffecb3;
+  /* Light cream text */
   min-width: 90px;
   text-align: center;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); /* Inset look */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  /* Inset look */
 }
 
 /* Center Turn Indicator (Wooden Plaque) */
@@ -135,7 +155,7 @@ body.player-b-turn .player-card.player-b {
   color: #a1887f;
   font-weight: 900;
   margin-bottom: 6px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .turn-pill {
@@ -146,13 +166,14 @@ body.player-b-turn .player-card.player-b {
   font-size: 1rem;
   letter-spacing: 1px;
   border: 2px solid #8d6e63;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
 }
 
 /* Hand Bubbles (Floating Seeds) */
 .hand-bubble {
-  background: radial-gradient(circle at 30% 30%, #ffd54f, #ff6f00); /* Amber/Gold bead */
+  background: radial-gradient(circle at 30% 30%, #ffd54f, #ff6f00);
+  /* Amber/Gold bead */
   color: #3e2723;
   width: 50px;
   height: 50px;
@@ -163,16 +184,21 @@ body.player-b-turn .player-card.player-b {
   font-size: 1.2rem;
   font-weight: bold;
   border: 2px solid #fff8e1;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
   position: absolute;
   top: -20px;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
   z-index: 10;
 }
 
-.player-b .hand-bubble { right: -15px; }
-.player-a .hand-bubble { left: -15px; }
+.player-b .hand-bubble {
+  right: -15px;
+}
+
+.player-a .hand-bubble {
+  left: -15px;
+}
 
 /* --- CONTROLS & FOOTER --- */
 .controls {
@@ -180,22 +206,23 @@ body.player-b-turn .player-card.player-b {
 }
 
 #newGameBtn {
-  font-family: 'Fredoka One', cursive;
+  font-family: 'Cinzel', serif;
   padding: 14px 40px;
-  border-radius: 12px; /* Less round, more like a button block */
+  border-radius: 12px;
   border: none;
-  
+
   /* Green Cloth / Felt Style Button */
   background: linear-gradient(to bottom, #66bb6a, #2e7d32);
   color: #fff;
   border: 2px solid #1b5e20;
-  
+
   font-size: 1.2rem;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 
-    0 5px 0 #1b5e20, /* Dark green depth */
-    0 10px 15px rgba(0,0,0,0.3);
+  box-shadow:
+    0 5px 0 #1b5e20,
+    /* Dark green depth */
+    0 10px 15px rgba(0, 0, 0, 0.3);
   transition: transform 0.1s, box-shadow 0.1s;
 }
 
@@ -207,16 +234,19 @@ body.player-b-turn .player-card.player-b {
 #status {
   margin-top: 20px;
   font-size: 1.3rem;
-  color: #000000; /* Light wood color text */
+  color: #000000;
+  /* Light wood color text */
   text-shadow: 0 2px 4px rgba(222, 222, 222, 0.6);
   min-height: 30px;
 }
 
 .footer {
   margin-top: 30px;
-  font-family: sans-serif;
+  font-family: 'Cinzel', serif;
   color: #4b4642;
   font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.85;
 }
 
 .board-container {
@@ -226,28 +256,53 @@ body.player-b-turn .player-card.player-b {
 }
 
 .board {
-  background: linear-gradient(135deg, #7b4a25, #5f3617);
-  border-radius: 24px;
-  padding: 12px;
+  background:
+    radial-gradient(circle at 20% 20%,
+      rgba(255, 255, 255, 0.08),
+      transparent 40%),
+    radial-gradient(circle at 80% 30%,
+      rgba(0, 0, 0, 0.25),
+      transparent 45%),
+    linear-gradient(135deg,
+      #5b3415 0%,
+      #6a3f1d 35%,
+      #4b2a10 65%,
+      #3a1f0e 100%);
+  border-radius: 40px;
+  padding: 18px;
   display: grid;
   grid-template-columns: 1.1fr 3fr 1.1fr;
   gap: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.7),
+    inset 0 0 12px rgba(255, 255, 255, 0.05),
+    0 14px 30px rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
 .board::before {
   content: "";
   position: absolute;
-  inset: 6px;
-  border-radius: 18px;
+  inset: 10px;
+  border-radius: 32px;
   border: 2px solid rgba(255, 255, 255, 0.18);
   pointer-events: none;
+  background:
+    radial-gradient(ellipse at 30% 50%,
+      rgba(255, 255, 255, 0.06),
+      transparent 60%),
+    radial-gradient(ellipse at 70% 60%,
+      rgba(0, 0, 0, 0.18),
+      transparent 65%);
 }
 
 .store {
-  background: radial-gradient(circle at top, #8d5524, #5c3310);
-  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at center,
+      #3a1f0e 0%,
+      #5a3314 70%,
+      #2a1408 100%);
+  border-radius: 60px;
   padding: 10px 6px;
   display: flex;
   flex-direction: column;
@@ -255,7 +310,8 @@ body.player-b-turn .player-card.player-b {
   justify-content: space-between;
   min-height: 220px;
   position: relative;
-  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 0 10px 20px rgba(0, 0, 0, 0.8);
   overflow: hidden;
 }
 
@@ -293,8 +349,15 @@ body.player-b-turn .player-card.player-b {
   border-radius: 10px;
 }
 
-.hole .seed-container .seed { width: 10px; height: 10px; }
-.store .seed-container .seed { width: 12px; height: 12px; }
+.hole .seed-container .seed {
+  width: 10px;
+  height: 10px;
+}
+
+.store .seed-container .seed {
+  width: 12px;
+  height: 12px;
+}
 
 .store .count {
   margin-top: 6px;
@@ -317,13 +380,19 @@ body.player-b-turn .player-card.player-b {
 
 .hole {
   position: relative;
-  border-radius: 999px;
+  border-radius: 45% 45% 55% 55%;
   border: none;
   outline: none;
   cursor: pointer;
   height: 70px;
-  background: radial-gradient(circle at 30% 20%, #e0bb8e, #9c6e3f);
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.5);
+  background:
+    radial-gradient(ellipse at center,
+      #2b1408 0%,
+      #4b2a10 60%,
+      #1a0c05 100%);
+  box-shadow:
+    inset 0 8px 14px rgba(0, 0, 0, 0.8),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.1);
   padding: 6px;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
   overflow: hidden;
@@ -352,26 +421,35 @@ body.player-b-turn .player-card.player-b {
 .seed {
   width: 10px;
   height: 10px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 20%, #ffffff, #f3caca);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  border-radius: 60% 40% 55% 45%;
+  background:
+    radial-gradient(circle at 30% 30%, #f5f1e6, #b8aa8a);
+  box-shadow:
+    inset -1px -1px 2px rgba(255, 255, 255, 0.4),
+    inset 1px 1px 2px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.4);
   opacity: 0.95;
 }
 
-.seed.alt { background: radial-gradient(circle at 30% 20%, #ffffff, #b8e4ff); }
-.seed.third { background: radial-gradient(circle at 30% 20%, #ffffff, #c4f5d2); }
+.seed.alt {
+  background: radial-gradient(circle at 30% 20%, #ffffff, #b8e4ff);
+}
+
+.seed.third {
+  background: radial-gradient(circle at 30% 20%, #ffffff, #c4f5d2);
+}
 
 .hole .count {
   position: absolute;
   right: 6px;
   bottom: 4px;
-  font-size: 0.8rem; /* Slightly larger */
-  font-weight: 800;  /* Bolder */
-  color: #3b2411;
-  text-shadow: 
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  /* text-shadow:
     0 0 3px rgba(255, 255, 255, 1),
-    0 0 6px rgba(255, 255, 255, 0.8); /* Stronger glow for readability */
-  z-index: 10; /* Ensure it stays ON TOP of seeds */
+    0 0 6px rgba(255, 255, 255, 0.8); */
+  z-index: 10;
   pointer-events: none;
 }
 
@@ -410,11 +488,6 @@ body.player-b-turn .player-card.player-b {
   margin-bottom: 4px;
 }
 
-.footer {
-  text-align: center;
-  font-size: 0.8rem;
-  opacity: 0.85;
-}
 
 body.player-a-turn .row-bottom .hole {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), inset 0 3px 6px rgba(0, 0, 0, 0.5);
@@ -468,12 +541,14 @@ body.player-b-turn .row-top .hole {
 }
 
 .modal-content {
-  background: #fffbeb; /* Light cream background */
+  background: #fffbeb;
+  /* Light cream background */
   padding: 40px 20px;
   border-radius: 40px;
-  box-shadow: 
-    0 20px 60px rgba(0,0,0,0.5),
-    0 0 0 10px #5c3310; /* Dark brown border like image */
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 10px #5c3310;
+  /* Dark brown border like image */
   text-align: center;
   width: 500px;
   max-width: 90%;
@@ -483,33 +558,35 @@ body.player-b-turn .row-top .hole {
 
 /* 1. THE MAIN TITLE (PLAYER A WINS!) */
 .modal-content h2 {
-  font-family: 'Fredoka One', cursive, sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 3.2rem;
   line-height: 1.1;
   text-transform: uppercase;
   margin-top: 0;
   /* CRITICAL FIX: Add margin bottom to make room for the crown below */
-  margin-bottom: 50px; 
+  margin-bottom: 50px;
   letter-spacing: 1px;
   animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Winner A Text Style (Green with Dark Outline) */
 .win-text-a {
-  color: #2ecc71; 
-  -webkit-text-stroke: 2px #0f5f28; /* Dark green outline */
-  text-shadow: 
-    4px 4px 0px #0f5f28, /* Cartoon block shadow */
-    4px 8px 10px rgba(0,0,0,0.2);
+  color: #2ecc71;
+  -webkit-text-stroke: 2px #0f5f28;
+  /* Dark green outline */
+  text-shadow:
+    4px 4px 0px #0f5f28,
+    /* Cartoon block shadow */
+    4px 8px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Winner B Text Style (Orange with Dark Outline) */
 .win-text-b {
-  color: #ff9f43; 
+  color: #ff9f43;
   -webkit-text-stroke: 2px #d35400;
-  text-shadow: 
+  text-shadow:
     4px 4px 0px #d35400,
-    4px 8px 10px rgba(0,0,0,0.2);
+    4px 8px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Tie Text Style */
@@ -523,7 +600,8 @@ body.player-b-turn .row-top .hole {
 .final-score {
   display: flex;
   justify-content: center;
-  align-items: flex-end; /* Align texts to bottom of numbers */
+  align-items: flex-end;
+  /* Align texts to bottom of numbers */
   gap: 30px;
   margin-bottom: 40px;
   position: relative;
@@ -533,12 +611,13 @@ body.player-b-turn .row-top .hole {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; /* For crown positioning */
+  position: relative;
+  /* For crown positioning */
 }
 
 /* "PLAYER A" / "PLAYER B" Labels */
 .score-box span:first-child {
-  font-family: 'Fredoka One', sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 1.3rem;
   margin-bottom: 0px;
   text-transform: uppercase;
@@ -548,33 +627,44 @@ body.player-b-turn .row-top .hole {
 /* Coloring the labels specifically */
 /* First box is Player A */
 .final-score .score-box:first-child span:first-child {
-  color: #e67e22; /* Orange label for A */
+  color: #e67e22;
+  /* Orange label for A */
 }
+
 /* Third box is Player B (2nd is VS) */
 .final-score .score-box:last-child span:first-child {
-  color: #95a5a6; /* Grey label for B */
+  color: #95a5a6;
+  /* Grey label for B */
 }
 
 /* The Big Numbers */
 .score-box .big-num {
-  font-family: 'Fredoka One', sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 4.5rem;
   line-height: 1;
 }
 
 /* Player A Number Color */
-#finalScoreA { color: #d35400; /* Burnt Orange */ }
+#finalScoreA {
+  color: #d35400;
+  /* Burnt Orange */
+}
+
 /* Player B Number Color */
-#finalScoreB { color: #4e342e; /* Dark Brown */ }
+#finalScoreB {
+  color: #4e342e;
+  /* Dark Brown */
+}
 
 /* VS Text */
 .vs {
-  font-family: sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 1.5rem;
   color: #bdc3c7;
   font-weight: 900;
   font-style: italic;
-  margin-bottom: 15px; /* Lift it slightly to align with center of numbers */
+  margin-bottom: 15px;
+  /* Lift it slightly to align with center of numbers */
 }
 
 /* 3. CROWN LOGIC */
@@ -589,51 +679,90 @@ body.player-b-turn .row-top .hole {
   font-size: 2.5rem;
   position: absolute;
   /* Position it ABOVE the label text */
-  top: -45px; 
+  top: -45px;
   left: 50%;
   transform: translateX(-50%);
   animation: floatCrown 2s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* 4. PLAY AGAIN BUTTON */
 #modalRestartBtn {
-  font-family: 'Fredoka One', sans-serif;
+  font-family: 'Cinzel', serif;
   padding: 12px 60px;
   font-size: 1.4rem;
   color: white;
-  background-color: #2ecc71; /* Bright Green */
+  background-color: #2ecc71;
+  /* Bright Green */
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  box-shadow: 
-    0 6px 0 #27ae60, /* 3D effect button bottom */
+  box-shadow:
+    0 6px 0 #27ae60,
+    /* 3D effect button bottom */
     0 10px 20px rgba(39, 174, 96, 0.4);
   transition: all 0.1s;
   text-transform: capitalize;
 }
 
 #modalRestartBtn:active {
-  transform: translateY(6px); /* Push down effect */
-  box-shadow: 
-    0 0 0 #27ae60, 
-    inset 0 2px 5px rgba(0,0,0,0.2);
+  transform: translateY(6px);
+  /* Push down effect */
+  box-shadow:
+    0 0 0 #27ae60,
+    inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Animations */
 @keyframes popIn {
-  0% { transform: scale(0.5); opacity: 0; }
-  60% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes floatCrown {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, -8px); }
+
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    transform: translate(-50%, -8px);
+  }
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 /* Confetti */
 .confetti {
@@ -643,12 +772,30 @@ body.player-b-turn .row-top .hole {
   z-index: 2001;
   animation: fall linear forwards;
 }
-@keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
 
 /* Mobile Adjustments */
 @media (max-width: 600px) {
-  .modal-content h2 { font-size: 2.2rem; margin-bottom: 40px; }
-  .score-box .big-num { font-size: 3rem; }
-  .winner-highlight::before { font-size: 2rem; top: -35px; }
-  .final-score { gap: 15px; }
+  .modal-content h2 {
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+  }
+
+  .score-box .big-num {
+    font-size: 3rem;
+  }
+
+  .winner-highlight::before {
+    font-size: 2rem;
+    top: -35px;
+  }
+
+  .final-score {
+    gap: 15px;
+  }
 }

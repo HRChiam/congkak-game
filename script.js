@@ -1,7 +1,3 @@
-// Congkak Game Logic + Smooth Path Animation
-// Enhanced: Sequential Selection -> Simultaneous Race
-// Features: Pop-up Winner, Max 100 Store Seeds, Max 30 Hole Seeds
-
 // Board indexes:
 // 0-6   : Player A holes (bottom row)
 // 7     : Player A store (Right)

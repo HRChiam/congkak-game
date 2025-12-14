@@ -21,8 +21,9 @@ const HOLES_PER_SIDE = 7;
 const TOTAL_SLOTS = 16;
 
 // Animation Timing
-const ANIMATION_DURATION = 320;
-const BETWEEN_SEEDS_DELAY = 100; // Slower pace
+let currentAnimDuration = 450; // Variable duration
+const NORMAL_ANIM_DURATION = 500;
+const RACE_ANIM_DURATION = 60; // Super fast for racing
 
 let board = [];
 let currentPlayer = "A";
@@ -31,6 +32,14 @@ let activeTurnCount = 0;
 let gameOver = false;
 let matchId = 0;
 let raceResult = null;
+
+// Race specific variables
+let keyPlayerA = "ArrowRight";
+let keyPlayerB = "ArrowLeft";
+let resolveKeyA = null;
+let resolveKeyB = null;
+let finishTimeA = 0;
+let finishTimeB = 0;
 
 // Setup selections
 let startChoiceA = null;
@@ -58,6 +67,70 @@ const finalScoreAEl = document.getElementById("finalScoreA");
 const finalScoreBEl = document.getElementById("finalScoreB");
 const modalRestartBtn = document.getElementById("modalRestartBtn");
 
+// --- SETTINGS LOGIC ---
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+const closeSettingsX = document.getElementById("closeSettingsX");
+const btnSetKeyA = document.getElementById("btnSetKeyA");
+const btnSetKeyB = document.getElementById("btnSetKeyB");
+
+// Load saved keys from LocalStorage (if any)
+if (localStorage.getItem("congkakKeyA")) {
+  keyPlayerA = localStorage.getItem("congkakKeyA");
+  btnSetKeyA.textContent = keyPlayerA;
+}
+if (localStorage.getItem("congkakKeyB")) {
+  keyPlayerB = localStorage.getItem("congkakKeyB");
+  btnSetKeyB.textContent = keyPlayerB;
+}
+
+// Open Settings
+settingsBtn.addEventListener("click", () => {
+  settingsModal.style.display = "flex";
+});
+
+// Close Settings
+function closeSettings() {
+  settingsModal.style.display = "none";
+  if (gamePhase === "race") {
+    setStatus(`RACE! A: Mash [${keyPlayerA}] | B: Mash [${keyPlayerB}]`);
+  }
+}
+
+closeSettingsBtn.addEventListener("click", closeSettings);
+// ADD THIS LISTENER:
+if (closeSettingsX) closeSettingsX.addEventListener("click", closeSettings);
+
+// Also close if clicking outside the box
+window.addEventListener("click", (e) => {
+  if (e.target === settingsModal) {
+    closeSettings();
+  }
+});
+
+// --- KEYBOARD LISTENER FOR RACE ---
+document.addEventListener("keydown", (e) => {
+  // If settings modal is open, do not trigger game logic
+  if (settingsModal.style.display === "flex") return;
+
+  if (gamePhase === "race") {
+    // Check against dynamic variable keyPlayerA
+    if (e.code === keyPlayerA && resolveKeyA) {
+      e.preventDefault();
+      const resolve = resolveKeyA;
+      resolveKeyA = null;
+      resolve();
+    }
+    // Check against dynamic variable keyPlayerB
+    if (e.code === keyPlayerB && resolveKeyB) {
+      e.preventDefault();
+      const resolve = resolveKeyB;
+      resolveKeyB = null;
+      resolve();
+    }
+  }
+});
 
 // Map index -> element
 function getSlotElement(index) {
@@ -84,6 +157,10 @@ function initBoard() {
   gameOver = false;
   currentPlayer = "A";
 
+  // Reset resolution hooks
+  resolveKeyA = null;
+  resolveKeyB = null;
+
   // Hide modal if open
   modalEl.style.display = "none";
 
@@ -93,7 +170,7 @@ function initBoard() {
   updateHandDisplay("B", 0, false);
   updateTurnIndicators();
   renderBoard();
-  setStatus("Player A: Choose your starting hole.");
+  setStatus("Player A: Click a hole to start.");
 }
 
 // --- Helpers ---
@@ -125,15 +202,12 @@ function setStatus(msg) {
 }
 
 function updateHandDisplay(player, count, visible) {
-  if (player === "A") {
-    handCountAEl.textContent = count;
-    handIndicatorAEl.style.opacity = visible ? "1" : "0";
-    handIndicatorAEl.style.transform = visible ? "scale(1)" : "scale(0.8)";
-  } else {
-    handCountBEl.textContent = count;
-    handIndicatorBEl.style.opacity = visible ? "1" : "0";
-    handIndicatorBEl.style.transform = visible ? "scale(1)" : "scale(0.8)";
-  }
+  const el = player === "A" ? handIndicatorAEl : handIndicatorBEl;
+  const txt = player === "A" ? handCountAEl : handCountBEl;
+
+  txt.textContent = count;
+  el.style.opacity = visible ? "1" : "0";
+  el.style.transform = visible ? "scale(1)" : "scale(0.8)";
 }
 
 // --- Rendering & UI ---
@@ -148,7 +222,6 @@ function renderBoard() {
     const seedContainer = document.createElement("div");
     seedContainer.classList.add("seed-container");
 
-    // --- FIX: INCREASED VISUAL LIMIT TO 30 ---
     const maxVisualSeeds = 30;
     const visualCount = Math.min(seedCount, maxVisualSeeds);
 
@@ -182,7 +255,6 @@ function renderStore(storeElement, index) {
 
   seedContainer.innerHTML = "";
 
-  // Store Limit 100
   const maxVisualStore = 100;
   const visualCount = Math.min(seedCount, maxVisualStore);
 
@@ -205,7 +277,7 @@ function updateTurnIndicators() {
   }
 
   if (gamePhase === "setup" || gamePhase === "race") {
-    currentTurnEl.textContent = "Setup / Race";
+    currentTurnEl.textContent = gamePhase === "race" ? "MASH KEYS!" : "Setup";
     if (startChoiceA === null) {
       document.body.classList.add("player-a-turn");
       document.body.classList.remove("player-b-turn");
@@ -213,6 +285,7 @@ function updateTurnIndicators() {
       document.body.classList.remove("player-a-turn");
       document.body.classList.add("player-b-turn");
     } else {
+      // Both active during race
       document.body.classList.add("player-a-turn");
       document.body.classList.add("player-b-turn");
     }
@@ -250,6 +323,14 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Helper to wait for specific player key press
+function waitForKeyPress(player) {
+  return new Promise((resolve) => {
+    if (player === "A") resolveKeyA = resolve;
+    else resolveKeyB = resolve;
+  });
+}
+
 // --- Animation ---
 
 function animateSeedMove(fromIndex, toIndex) {
@@ -270,42 +351,71 @@ function animateSeedMove(fromIndex, toIndex) {
     const endX = toRect.left + toRect.width / 2;
     const endY = toRect.top + toRect.height / 2;
 
+    // 1. Define Exact Durations (in ms)
+    const isRace = (gamePhase === "race");
+    const duration = isRace ? 60 : 350; // 350ms for normal feels snappier
+
+    // 2. Create Element
     const floating = document.createElement("div");
     floating.classList.add("floating-seed");
     floating.style.left = `${startX}px`;
     floating.style.top = `${startY}px`;
     floating.style.transform = "scale(0.8)";
     floating.style.opacity = "1";
-
     document.body.appendChild(floating);
+
+    // Force Reflow
     floating.offsetWidth;
+
+    // 3. Apply Transition 
+    floating.style.transition = `
+      left ${duration}ms linear, 
+      top ${duration}ms cubic-bezier(0.55, 0.055, 0.675, 0.19), 
+      transform ${duration}ms ease-out
+    `;
 
     floating.style.left = `${endX}px`;
     floating.style.top = `${endY}px`;
     floating.style.transform = "scale(1)";
 
-    floating.addEventListener("transitionend", () => {
-      document.body.removeChild(floating);
+    // 4. PRE-EMPTIVE SOUND TRIGGER (The Fix)
+    const soundDelay = Math.max(0, duration - 50);
 
+    setTimeout(() => {
       const targetEl = getSlotElement(toIndex);
-      if (isStore(toIndex)) {
-        sndStore.currentTime = 0;
-        sndStore.play().catch(() => { });
-        targetEl.classList.add("store-pulse");
-        setTimeout(() => targetEl.classList.remove("store-pulse"), 400);
-      } else {
-        sndDrop.currentTime = 0;
-        sndDrop.play().catch(() => { });
-        targetEl.classList.add("slot-glow");
-        setTimeout(() => targetEl.classList.remove("slot-glow"), 400);
-      }
 
+      // Handle Audio
+      if (isStore(toIndex)) {
+        if (isRace) {
+          const s = sndStore.cloneNode();
+          s.volume = 0.1;
+          s.play().catch(() => { });
+        } else {
+          // Reset time to 0 to allow rapid replays
+          sndStore.currentTime = 0;
+          sndStore.play().catch(() => { });
+        }
+        targetEl.classList.add("store-pulse");
+        setTimeout(() => targetEl.classList.remove("store-pulse"), 200);
+      } else {
+        if (!isRace) {
+          sndDrop.currentTime = 0; // Instant replay
+          sndDrop.play().catch(() => { });
+        }
+        targetEl.classList.add("slot-glow");
+        setTimeout(() => targetEl.classList.remove("slot-glow"), 200);
+      }
+    }, soundDelay);
+
+    // 5. Cleanup & Resolve
+    setTimeout(() => {
+      if (document.body.contains(floating)) {
+        document.body.removeChild(floating);
+      }
       resolve();
-    }, { once: true }
-    );
+    }, duration);
   });
 }
-
 // --- Interaction Handler ---
 
 async function handleHoleClick(index) {
@@ -325,7 +435,8 @@ async function handleHoleClick(index) {
       if (owner === "B" && board[index] > 0) {
         startChoiceB = index;
         btn.classList.add("selected-start");
-        setStatus("GO! Race started!");
+        // Trigger Race Instructions
+        setStatus(`RACE! A: Mash [${keyPlayerA}] | B: Mash [${keyPlayerB}]`);
         triggerSimultaneousRace();
       }
     }
@@ -351,18 +462,28 @@ async function triggerSimultaneousRace() {
   const currentMatchId = matchId;
 
   gamePhase = "race";
-  raceResult = {
-    storeGainA: 0,
-    storeGainB: 0,
-    lastStopA: null,
-    lastStopB: null
-  };
-  updateTurnIndicators();
+  currentAnimDuration = RACE_ANIM_DURATION; // Fast animation
 
+  // 1. Snapshot scores
+  const startScoreA = board[7];
+  const startScoreB = board[15];
+
+  // Reset timers
+  finishTimeA = 0;
+  finishTimeB = 0;
+
+  updateTurnIndicators();
   holeButtons.forEach(btn => btn.classList.remove("selected-start"));
 
-  const p1 = runTurnLogic(startChoiceA, "A").then(() => updateHandDisplay("A", 0, false));
-  const p2 = runTurnLogic(startChoiceB, "B").then(() => updateHandDisplay("B", 0, false));
+  // 2. Run both players simultaneously
+  const p1 = runTurnLogic(startChoiceA, "A").then(() => {
+    finishTimeA = Date.now();
+    updateHandDisplay("A", 0, false);
+  });
+  const p2 = runTurnLogic(startChoiceB, "B").then(() => {
+    finishTimeB = Date.now();
+    updateHandDisplay("B", 0, false);
+  });
 
   await Promise.all([p1, p2]);
 
@@ -370,34 +491,41 @@ async function triggerSimultaneousRace() {
 
   activeTurnCount = 0;
   gamePhase = "turn";
+  currentAnimDuration = NORMAL_ANIM_DURATION; // Restore normal speed
 
-  if (raceResult.storeGainA > raceResult.storeGainB) {
+  // 3. Calculate Scores
+  const finalScoreA = board[7];
+  const finalScoreB = board[15];
+
+  // --- NEW LOGIC START ---
+
+  // Logic: The player who finished (stopped) EARLIER waits for the other to finish.
+  // Therefore, the one who stopped earlier gets the NEXT turn.
+
+  // Case 1: Player A stopped first (Time A is smaller than Time B)
+  if (finishTimeA < finishTimeB) {
     currentPlayer = "A";
-    setStatus("Race result: Player A gained more seeds and goes first.");
+    setStatus(`Race Over! Player A stopped first, so A goes next.`);
   }
-  else if (raceResult.storeGainB > raceResult.storeGainA) {
+  // Case 2: Player B stopped first
+  else if (finishTimeB < finishTimeA) {
     currentPlayer = "B";
-    setStatus("Race result: Player B gained more seeds and goes first.");
+    setStatus(`Race Over! Player B stopped first, so B goes next.`);
   }
+  // Case 3: Exact Tie (Impossible, but handled)
   else {
-    // 2️⃣ Compare last stop side
-    const aOnOwnSide = raceResult.lastStopA >= 0 && raceResult.lastStopA <= 6;
-    const bOnOwnSide = raceResult.lastStopB >= 8 && raceResult.lastStopB <= 14;
-
-    if (aOnOwnSide && !bOnOwnSide) {
+    // Tie-breaker: Who has MORE seeds in store?
+    if (finalScoreA > finalScoreB) {
       currentPlayer = "A";
-      setStatus("Race tie-breaker: Player A stopped on own side.");
-    }
-    else if (bOnOwnSide && !aOnOwnSide) {
+      setStatus(`Perfect Time Tie! Player A has higher score, so A goes next.`);
+    } else {
       currentPlayer = "B";
-      setStatus("Race tie-breaker: Player B stopped on own side.");
-    }
-    else {
-      // 3️⃣ Traditional rule
-      currentPlayer = "A";
-      setStatus("Race tie: Traditional rule — Player A goes first.");
+      setStatus(`Perfect Time Tie! Player B has higher score, so B goes next.`);
     }
   }
+
+  // --- NEW LOGIC END ---
+
   updateTurnIndicators();
 }
 
@@ -421,6 +549,14 @@ async function runTurnLogic(startIndex, player) {
     // 1. Distribute seeds
     while (hand > 0) {
       if (matchId !== currentMatchId) return;
+
+      if (gamePhase === "race") {
+        if (statusEl.textContent.includes("CAPTURE") || statusEl.textContent.includes("Store")) {
+        } else {
+        }
+        await waitForKeyPress(player);
+      }
+
       let nextIndex = (currentIndex + 1) % TOTAL_SLOTS;
 
       // Skip opponent's store
@@ -433,10 +569,8 @@ async function runTurnLogic(startIndex, player) {
       // 2. Animate (Visual)
       await animateSeedMove(currentIndex, nextIndex);
 
-      // Check cancellation (Stop if user clicked New Game during flight)
       if (matchId !== currentMatchId) return;
 
-      // --- CHANGE END: We moved the decrement here (After Landing) ---
       hand--;
       updateHandDisplay(player, hand, true);
 
@@ -445,19 +579,16 @@ async function runTurnLogic(startIndex, player) {
       currentIndex = nextIndex;
       renderBoard();
 
-      await sleep(BETWEEN_SEEDS_DELAY);
+      // Only sleep in normal mode (in race mode, the keypress IS the wait)
+      if (gamePhase !== "race") {
+        await sleep(100);
+      }
     }
 
     // 2. Check Landing Condition
     if (isStore(currentIndex)) {
       if (gamePhase === "race") {
-        if (player === "A" && currentIndex === 7) {
-          raceResult.storeGainA++;
-        }
-        if (player === "B" && currentIndex === 15) {
-          raceResult.storeGainB++;
-        }
-        setStatus(`Player ${player} landed in Store (Race).`);
+        setStatus(`RACE: Player ${player} landed in Store! Finished!`);
         keepGoing = false;
         return;
       }
@@ -471,18 +602,22 @@ async function runTurnLogic(startIndex, player) {
       if (isOnSide(currentIndex, player)) {
         await applyCapture(currentIndex, player);
       } else {
-        setStatus(`Player ${player} stopped (Mati).`);
-      }
-      if (gamePhase === "race") {
-        if (player === "A") raceResult.lastStopA = currentIndex;
-        if (player === "B") raceResult.lastStopB = currentIndex;
+        if (gamePhase === "race") {
+          setStatus(`RACE: Player ${player} stopped (Mati). Finished!`);
+        } else {
+          setStatus(`Player ${player} stopped (Mati).`);
+        }
       }
       keepGoing = false;
     }
     else {
       // Pick up seeds
-      setStatus(`Player ${player} continues...`);
-      await sleep(200);
+      if (gamePhase !== "race") {
+        setStatus(`Player ${player} continues...`);
+        await sleep(200);
+      } else {
+        // setStatus(`RACE! Player ${player} pick up seeds! MASH KEYS!`);
+      }
 
       if (matchId !== currentMatchId) return;
 
@@ -507,10 +642,26 @@ async function applyCapture(landingIndex, player) {
     landingEl.style.background = "#ff6b6b";
     oppositeEl.style.background = "#ff6b6b";
 
-    setStatus(`CAPTURE! Player ${player} takes ${capturedSeeds} seeds!`);
-    sndCapture.play().catch(() => { });
+    // --- 核心修复：竞速模式下的提示与延时 ---
+    if (gamePhase === "race") {
+      // 播放声音但音量小一点
+      const s = sndCapture.cloneNode();
+      s.volume = 0.5;
+      s.play().catch(() => { });
 
-    await sleep(600);
+      // 提示语加上 "KEEP GOING"
+      const otherPlayer = player === "A" ? "B" : "A";
+      setStatus(`RACE: Player ${player} CAPTURED! Player ${otherPlayer} KEEP MASHING!`);
+
+      // 竞速模式几乎不等待，保持快节奏
+      await sleep(100);
+    } else {
+      // 正常模式
+      setStatus(`CAPTURE! Player ${player} takes ${capturedSeeds} seeds!`);
+      sndCapture.play().catch(() => { });
+      await sleep(600);
+    }
+    // -------------------------------------
 
     board[oppositeIndex] = 0;
     board[landingIndex] = 0;
@@ -524,7 +675,11 @@ async function applyCapture(landingIndex, player) {
     storeEl.classList.add("store-pulse");
     setTimeout(() => storeEl.classList.remove("store-pulse"), 500);
   } else {
-    setStatus(`Player ${player} landed in empty hole. No seeds to capture.`);
+    if (gamePhase === "race") {
+      setStatus(`RACE: Player ${player} landed in empty hole. Finished.`);
+    } else {
+      setStatus(`Player ${player} landed in empty hole. No seeds to capture.`);
+    }
   }
 }
 
@@ -536,27 +691,46 @@ function checkGameState() {
     return;
   }
 
-  // Only check turn switching in normal turn mode
   if (gamePhase === "turn" && activeTurnCount === 0) {
     if (statusEl.textContent.startsWith("Race")) {
       updateTurnIndicators();
       return;
     }
+
     const statusText = statusEl.textContent;
-    if (!statusText.includes("Another turn") && !statusText.includes("Entering Turn Mode")) {
-      currentPlayer = currentPlayer === "A" ? "B" : "A";
-      setStatus(`Now Player ${currentPlayer}'s turn.`);
+    const isFreeTurn = statusText.includes("another turn") || statusText.includes("Entering Turn Mode");
+
+    if (isFreeTurn) {
+      if (sideEmpty(currentPlayer)) {
+        setStatus(`Landed in Store! But Player ${currentPlayer} has no seeds. Game Over.`);
+        gamePhase = "ended";
+        setTimeout(() => {
+          collectRemainingSeeds();
+          renderBoard();
+          endGame();
+        }, 2000);
+        return;
+      }
+      updateTurnIndicators();
+      return;
     }
 
-    if (sideEmpty(currentPlayer)) {
-      setStatus(`Player ${currentPlayer} has no seeds! Skipping turn.`);
-      currentPlayer = currentPlayer === "A" ? "B" : "A";
-      if (sideEmpty(currentPlayer)) {
+    const nextPlayer = currentPlayer === "A" ? "B" : "A";
+    if (sideEmpty(nextPlayer)) {
+      setStatus(`Player ${nextPlayer} has no seeds to move! Player ${currentPlayer} collects the rest.`);
+      gamePhase = "ended";
+      setTimeout(() => {
         collectRemainingSeeds();
+        renderBoard();
         endGame();
-      }
+      }, 2000);
+      return;
     }
+
+    currentPlayer = nextPlayer;
+    setStatus(`Now Player ${currentPlayer}'s turn.`);
   }
+
   updateTurnIndicators();
 }
 
@@ -646,6 +820,44 @@ holeButtons.forEach((btn) => {
   });
 });
 
+// Generic function to record a new key
+function setupKeyRecorder(btnElement, player) {
+  btnElement.addEventListener("click", () => {
+    // Visual Feedback
+    const originalText = btnElement.textContent;
+    btnElement.textContent = "Press Key...";
+    btnElement.classList.add("listening");
+
+    // One-time listener for the next key press
+    const keyHandler = (e) => {
+      e.preventDefault(); // Stop page scrolling if they pick Spacebar
+
+      const newCode = e.code; // e.g., "KeyD", "Space", "ArrowUp"
+
+      // Save to variable
+      if (player === "A") {
+        keyPlayerA = newCode;
+        localStorage.setItem("congkakKeyA", newCode); // Save for next time
+      } else {
+        keyPlayerB = newCode;
+        localStorage.setItem("congkakKeyB", newCode);
+      }
+
+      // Update Button UI
+      btnElement.textContent = newCode;
+      btnElement.classList.remove("listening");
+
+      // Remove this temporary listener
+      document.removeEventListener("keydown", keyHandler);
+    };
+
+    document.addEventListener("keydown", keyHandler);
+  });
+}
+
+// Attach logic to buttons
+setupKeyRecorder(btnSetKeyA, "A");
+setupKeyRecorder(btnSetKeyB, "B");
 newGameBtn.addEventListener("click", initBoard);
 modalRestartBtn.addEventListener("click", initBoard); // Wire up modal button
 

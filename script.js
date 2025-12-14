@@ -67,6 +67,36 @@ const finalScoreAEl = document.getElementById("finalScoreA");
 const finalScoreBEl = document.getElementById("finalScoreB");
 const modalRestartBtn = document.getElementById("modalRestartBtn");
 
+const raceOverlay = document.getElementById("raceOverlay");
+const btnMashA = document.getElementById("btnMashA");
+const btnMashB = document.getElementById("btnMashB");
+
+const rulesBtn = document.getElementById("rulesBtn");
+const rulesModal = document.getElementById("rulesModal");
+const closeRulesBtn = document.getElementById("closeRulesBtn");
+const closeRulesX = document.getElementById("closeRulesX");
+function openRules() {
+  rulesModal.style.display = "flex";
+}
+
+function closeRules() {
+  rulesModal.style.display = "none";
+}
+
+rulesBtn.addEventListener("click", openRules);
+closeRulesBtn.addEventListener("click", closeRules);
+if (closeRulesX) closeRulesX.addEventListener("click", closeRules);
+
+// Update window click to close Rules if clicking outside
+window.addEventListener("click", (e) => {
+  if (e.target === settingsModal) {
+    closeSettings();
+  }
+  if (e.target === rulesModal) {
+    closeRules();
+  }
+});
+
 // --- SETTINGS LOGIC ---
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsModal = document.getElementById("settingsModal");
@@ -94,7 +124,7 @@ settingsBtn.addEventListener("click", () => {
 function closeSettings() {
   settingsModal.style.display = "none";
   if (gamePhase === "race") {
-    setStatus(`RACE! A: Mash [${keyPlayerA}] | B: Mash [${keyPlayerB}]`);
+    setStatus(`RACE! A: [${keyPlayerA}] or TAP A | B: [${keyPlayerB}] or TAP B`);
   }
 }
 
@@ -112,7 +142,7 @@ window.addEventListener("click", (e) => {
 // --- KEYBOARD LISTENER FOR RACE ---
 document.addEventListener("keydown", (e) => {
   // If settings modal is open, do not trigger game logic
-  if (settingsModal.style.display === "flex") return;
+  if (settingsModal.style.display === "flex" || rulesModal.style.display === "flex") return;
 
   if (gamePhase === "race") {
     // Check against dynamic variable keyPlayerA
@@ -436,7 +466,7 @@ async function handleHoleClick(index) {
         startChoiceB = index;
         btn.classList.add("selected-start");
         // Trigger Race Instructions
-        setStatus(`RACE! A: Mash [${keyPlayerA}] | B: Mash [${keyPlayerB}]`);
+        setStatus(`RACE! A: [${keyPlayerA}] or TAP A | B: [${keyPlayerB}] or TAP B`);
         triggerSimultaneousRace();
       }
     }
@@ -464,6 +494,7 @@ async function triggerSimultaneousRace() {
   gamePhase = "race";
   currentAnimDuration = RACE_ANIM_DURATION; // Fast animation
 
+  if (raceOverlay) raceOverlay.style.display = "flex";
   // 1. Snapshot scores
   const startScoreA = board[7];
   const startScoreB = board[15];
@@ -471,7 +502,6 @@ async function triggerSimultaneousRace() {
   // Reset timers
   finishTimeA = 0;
   finishTimeB = 0;
-
   updateTurnIndicators();
   holeButtons.forEach(btn => btn.classList.remove("selected-start"));
 
@@ -487,6 +517,8 @@ async function triggerSimultaneousRace() {
 
   await Promise.all([p1, p2]);
 
+  if (raceOverlay) raceOverlay.style.display = "none";
+
   if (matchId !== currentMatchId) return;
 
   activeTurnCount = 0;
@@ -496,11 +528,6 @@ async function triggerSimultaneousRace() {
   // 3. Calculate Scores
   const finalScoreA = board[7];
   const finalScoreB = board[15];
-
-  // --- NEW LOGIC START ---
-
-  // Logic: The player who finished (stopped) EARLIER waits for the other to finish.
-  // Therefore, the one who stopped earlier gets the NEXT turn.
 
   // Case 1: Player A stopped first (Time A is smaller than Time B)
   if (finishTimeA < finishTimeB) {
@@ -854,6 +881,40 @@ function setupKeyRecorder(btnElement, player) {
     document.addEventListener("keydown", keyHandler);
   });
 }
+
+function triggerMash(player) {
+  if (gamePhase !== "race") return;
+
+  // Logic mimics the keyboard listener
+  if (player === "A" && resolveKeyA) {
+    const resolve = resolveKeyA;
+    resolveKeyA = null;
+    resolve();
+    // Visual feedback
+    btnMashA.style.transform = "scale(0.9)";
+    setTimeout(() => btnMashA.style.transform = "scale(1)", 50);
+  }
+  
+  if (player === "B" && resolveKeyB) {
+    const resolve = resolveKeyB;
+    resolveKeyB = null;
+    resolve();
+    // Visual feedback
+    btnMashB.style.transform = "scale(0.9)";
+    setTimeout(() => btnMashB.style.transform = "scale(1)", 50);
+  }
+}
+
+// Add Listeners (pointerdown is faster than click for games)
+if (btnMashA) btnMashA.addEventListener("pointerdown", (e) => {
+    e.preventDefault(); // Stop mouse selection
+    triggerMash("A");
+});
+
+if (btnMashB) btnMashB.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    triggerMash("B");
+});
 
 // Attach logic to buttons
 setupKeyRecorder(btnSetKeyA, "A");

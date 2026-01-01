@@ -669,21 +669,16 @@ async function applyCapture(landingIndex, player) {
     landingEl.style.background = "#ff6b6b";
     oppositeEl.style.background = "#ff6b6b";
 
-    // --- 核心修复：竞速模式下的提示与延时 ---
     if (gamePhase === "race") {
-      // 播放声音但音量小一点
       const s = sndCapture.cloneNode();
       s.volume = 0.5;
       s.play().catch(() => { });
 
-      // 提示语加上 "KEEP GOING"
       const otherPlayer = player === "A" ? "B" : "A";
       setStatus(`RACE: Player ${player} CAPTURED! Player ${otherPlayer} KEEP MASHING!`);
 
-      // 竞速模式几乎不等待，保持快节奏
       await sleep(100);
     } else {
-      // 正常模式
       setStatus(`CAPTURE! Player ${player} takes ${capturedSeeds} seeds!`);
       sndCapture.play().catch(() => { });
       await sleep(600);
@@ -725,50 +720,25 @@ function checkGameState() {
     }
 
     const statusText = statusEl.textContent;
-    const isFreeTurn = statusText.includes("another turn") || statusText.includes("Entering Turn Mode");
+    const landedInStore = statusText.includes("another turn") || statusText.includes("Entering Turn Mode");
 
-    if (isFreeTurn) {
-      if (sideEmpty(currentPlayer)) {
-        setStatus(`Landed in Store! But Player ${currentPlayer} has no seeds. Game Over.`);
-        gamePhase = "ended";
-        setTimeout(() => {
-          collectRemainingSeeds();
-          renderBoard();
-          endGame();
-        }, 2000);
-        return;
+    let candidatePlayer = landedInStore ? currentPlayer : (currentPlayer === "A" ? "B" : "A");
+
+    if (sideEmpty(candidatePlayer)) {
+      const otherPlayer = candidatePlayer === "A" ? "B" : "A";
+      
+      currentPlayer = otherPlayer;
+      setStatus(`Player ${candidatePlayer} has no seeds! Turn passes to Player ${currentPlayer}.`);
+    } else {
+      currentPlayer = candidatePlayer;
+      
+      if (!landedInStore) {
+        setStatus(`Now Player ${currentPlayer}'s turn.`);
       }
-      updateTurnIndicators();
-      return;
     }
-
-    const nextPlayer = currentPlayer === "A" ? "B" : "A";
-    if (sideEmpty(nextPlayer)) {
-      setStatus(`Player ${nextPlayer} has no seeds to move! Player ${currentPlayer} collects the rest.`);
-      gamePhase = "ended";
-      setTimeout(() => {
-        collectRemainingSeeds();
-        renderBoard();
-        endGame();
-      }, 2000);
-      return;
-    }
-
-    currentPlayer = nextPlayer;
-    setStatus(`Now Player ${currentPlayer}'s turn.`);
   }
 
   updateTurnIndicators();
-}
-
-function collectRemainingSeeds() {
-  let aRemaining = 0;
-  for (let i = 0; i <= 6; i++) { aRemaining += board[i]; board[i] = 0; }
-  board[7] += aRemaining;
-
-  let bRemaining = 0;
-  for (let i = 8; i <= 14; i++) { bRemaining += board[i]; board[i] = 0; }
-  board[15] += bRemaining;
 }
 
 function endGame() {
